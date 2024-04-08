@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-gen
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-gen
+  namespace: cert-gen
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cert-gen
+rules:
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["create", "delete", "get", "patch", "list", "watch", "update"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["create", "get", "patch", "list", "watch", "update"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cert-gen
+subjects:
+  - kind: ServiceAccount
+    name: cert-gen
+    namespace: cert-gen
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cert-gen
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cert-gen
+  namespace: cert-gen
+  labels:
+    name: cert-gen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: cert-gen
+  template:
+    metadata:
+      labels:
+        name: cert-gen
+    spec:
+      containers:
+       - name: cert-gen
+         image: docker.io/videlov/cert-gen:0.0.3
+         command:
+         - /cert-gen
+         ports:
+         - name: http
+           containerPort: 8080
+      serviceAccountName: cert-gen
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cert-gen
+  namespace: cert-gen
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+  selector:
+     name: cert-gen
+  type: ClusterIP
