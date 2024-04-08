@@ -25,7 +25,7 @@ const (
 	keyName        = "tls.key"
 	APIRuleCRDName = "apirules.gateway.kyma-project.io"
 
-	secretNamespace = "cert-gen"
+	secretNamespace = "kyma-system"
 	secretName      = "api-gateway-webhook-service"
 	serviceName     = "api-gateway-webhook-service"
 )
